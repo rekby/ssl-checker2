@@ -61,21 +61,22 @@ func main() {
 
 	tlsConn := tls.Client(tcpConn, &tls.Config{
 		InsecureSkipVerify: true,
+		ServerName:         host,
 	})
 	err = tlsConn.Handshake()
 	if err != nil {
-		log.Fatal("Can't handshake '%s': %s", hostPort, err)
+		log.Fatalf("Can't handshake '%s': %s", hostPort, err)
 	}
 
 	certificates := tlsConn.ConnectionState().PeerCertificates
 	if len(certificates) == 0 {
-		log.Fatal("No peer certificate after handshake '%s'", hostPort)
+		log.Fatalf("No peer certificate after handshake '%s'", hostPort)
 	}
 
 	cert := certificates[0]
 
 	res := RESULT{
-		EOL_DATETIME: cert.NotAfter,
+		EOL_DATETIME: cert.NotAfter.Local(),
 		EOL_UNIXTIME: cert.NotAfter.Unix(),
 	}
 
