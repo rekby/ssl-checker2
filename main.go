@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -26,12 +27,13 @@ type RESULT struct {
 }
 
 func main() {
+	flag.Usage = usage
 	flag.Parse()
 
 	ctx, ctxCancel := context.WithTimeout(context.Background(), *Timeout)
 	defer ctxCancel()
 
-	template, err := template.New("template").Parse(*Format)
+	tmpl, err := template.New("template").Parse(*Format)
 	if err != nil {
 		log.Fatalf("Can't parse template '%s': %s", *Format, err)
 	}
@@ -46,7 +48,7 @@ func main() {
 	}
 
 	hostPort := host + ":" + port
-	log.Println("Host:", hostPort, *Host)
+	log.Println("Host:", hostPort)
 	tcpConn, err := net.DialTimeout("tcp", hostPort, *Timeout)
 	if tcpConn != nil {
 		defer tcpConn.Close()
@@ -77,5 +79,11 @@ func main() {
 		EOL_UNIXTIME: cert.NotAfter.Unix(),
 	}
 
-	template.Execute(os.Stdout, res)
+	tmpl.Execute(os.Stdout, res)
+}
+
+func usage() {
+	flag.CommandLine.SetOutput(os.Stdout)
+	fmt.Println("https://github.com/rekby/ssl-checker2")
+	flag.CommandLine.PrintDefaults()
 }
