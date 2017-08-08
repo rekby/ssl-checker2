@@ -13,12 +13,9 @@ import (
 )
 
 var (
-	Host        = flag.String("host", "", "host[:port] to check certificate")
-	OutEOL      = flag.Bool("out-eol", false, "Print unix time stamp of eol certificate (norman time in human mode")
-	HumanFormat = flag.Bool("human", false, "Display result in human readable format. Bad for parsing.")
-	Timeout     = flag.Duration("timeout", time.Second, "Max time of work")
-	NoTitle     = flag.Bool("notitle", false, "No out line header")
-	Format      = flag.String("format", "EOL: {{.EOL_DATETIME}}", "Output format. Available fields: EOL_DATETIME, EOL_UNIXTIME")
+	Host    = flag.String("host", "", "host[:port] to check certificate")
+	Timeout = flag.Duration("timeout", time.Second, "Max time of work")
+	Format  = flag.String("format", "EOL: {{.EOL_DATETIME}}", "Output format. Available fields: EOL_DATETIME, EOL_UNIXTIME")
 )
 
 type RESULT struct {
