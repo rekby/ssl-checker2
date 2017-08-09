@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -15,17 +16,17 @@ import (
 var (
 	Host    = flag.String("host", "", "host[:port] to check certificate")
 	Timeout = flag.Duration("timeout", time.Second, "Max time of work")
-	Format  = flag.String("format", "EOL: {{.EOL_DATETIME}}", "Output format. Available fields: EOL_DATETIME, EOL_UNIXTIME")
+	Format  = flag.String("format", "EOL: {{.EOL_DATETIME}}", "Output format. Available fields: EOL_DATETIME, EOL_UNIXTIME, EOL_TTL")
+	NoLog   = flag.Bool("nolog", false, "Disable log to stderr")
 )
-
-type RESULT struct {
-	EOL_DATETIME time.Time
-	EOL_UNIXTIME int64
-}
 
 func main() {
 	flag.Usage = usage
 	flag.Parse()
+
+	if *NoLog {
+		log.SetOutput(ioutil.Discard)
+	}
 
 	ctx, ctxCancel := context.WithTimeout(context.Background(), *Timeout)
 	defer ctxCancel()
@@ -72,9 +73,15 @@ func main() {
 
 	cert := certificates[0]
 
+	type RESULT struct {
+		EOL_DATETIME time.Time
+		EOL_UNIXTIME int64
+		EOL_TTL      int64
+	}
 	res := RESULT{
 		EOL_DATETIME: cert.NotAfter.Local(),
 		EOL_UNIXTIME: cert.NotAfter.Unix(),
+		EOL_TTL:      cert.NotAfter.Unix() - time.Now().Unix(),
 	}
 
 	tmpl.Execute(os.Stdout, res)
